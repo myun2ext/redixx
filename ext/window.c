@@ -1,65 +1,52 @@
 #include <windows.h>
 
-LRESULT CALLBACK WndProc (HWND, UINT, WPARAM, LPARAM);
-
-int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                    PSTR szCmdLine, int iCmdShow){
-
-	HWND hwnd;
-	MSG  msg;
-	WNDCLASSEX  wndclass ;
-
-	wndclass.cbSize        = sizeof(wndclass);        /* 構造体の大きさ */
-	wndclass.style         = CS_HREDRAW | CS_VREDRAW; /* スタイル */
-	wndclass.lpfnWndProc   = WndProc;                /* メッセージ処理関数 */
-	wndclass.cbClsExtra    = 0;
-	wndclass.cbWndExtra    = 0;
-	wndclass.hInstance     = hInstance;             /* プログラムのハンドル */
-	wndclass.hIcon         = LoadIcon(NULL, IDI_APPLICATION); /* アイコン */
-	wndclass.hCursor       = LoadCursor(NULL, IDC_ARROW);     /* カーソル */
-	wndclass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH); /* ブラシ */
-	wndclass.lpszMenuName  = NULL;              /* メニュー */
-	wndclass.lpszClassName = "Test Window";   /* クラス名 */
-	wndclass.hIconSm       = LoadIcon (NULL, IDI_APPLICATION);
-
-	RegisterClassEx(&wndclass); /* ウインドウクラスTest Windowを登録 */
-
-	hwnd = CreateWindow (
-           "Test Window",        /* ウインドウクラス名 */
-	   	    "窓を開く",           /* ウインドウのタイトル */
-            WS_OVERLAPPEDWINDOW, /* ウインドウスタイル */
-            32,32,               /* ウインドウ表示位置 */
-            256,256,             /* ウインドウの大きさ */
-            NULL,                /* 親ウインドウのハンドル */
-            NULL,                /* メニューのハンドル */
-            hInstance,           /* インスタンスのハンドル */
-            NULL);               /* 作成時の引数保存用ポインタ */
-
-	ShowWindow (hwnd,iCmdShow);      /* ウインドウを表示 */
-	UpdateWindow (hwnd);
-
-	while (GetMessage (&msg,NULL,0,0)) { /* メッセージループ */
-
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-
+LRESULT CALLBACK RinderonWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg) {
+		case WM_DESTROY:
+			::PostQuitMessage(0);
+			return 0;
+		default:
+			break;
 	}
 
-	return msg.wParam ;
-
+	return ::DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
+int WINAPI WinMain(HINSTANCE hinst, HINSTANCE hinstPrev, LPSTR lpszCmdLine, int nCmdShow)
+{
+	TCHAR      szAppName[] = TEXT("sample");
+	HWND       hwnd;
+	MSG        msg;
+	WNDCLASSEX wc;
 
-	switch (iMsg) {
+	wc.cbSize        = sizeof(WNDCLASSEX);
+	wc.style         = 0;
+	wc.lpfnWndProc   = WindowProc;
+	wc.cbClsExtra    = 0;
+	wc.cbWndExtra    = 0;
+	wc.hInstance     = hinst;
+	wc.hIcon         = (HICON)LoadImage(NULL, IDI_APPLICATION, IMAGE_ICON, 0, 0, LR_SHARED);
+	wc.hCursor       = (HCURSOR)LoadImage(NULL, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_SHARED);
+	wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+	wc.lpszMenuName  = NULL;
+	wc.lpszClassName = szAppName;
+	wc.hIconSm       = (HICON)LoadImage(NULL, IDI_APPLICATION, IMAGE_ICON, 0, 0, LR_SHARED);
+	
+	if (RegisterClassEx(&wc) == 0)
+		return 0;
 
-		case WM_DESTROY : /* 終了処理 */
+	hwnd = CreateWindowEx(WS_EX_TOPMOST, szAppName, szAppName, WS_OVERLAPPEDWINDOW & ~WS_MINIMIZEBOX, CW_USEDEFAULT, CW_USEDEFAULT, 300, 200, NULL, NULL, hinst, NULL);
+	if (hwnd == NULL)
+		return 0;
 
-			PostQuitMessage(0);
-			return 0;
-
+	ShowWindow(hwnd, nCmdShow);
+	UpdateWindow(hwnd);
+	
+	while (GetMessage(&msg, NULL, 0, 0) > 0) {
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
 	}
 
-	return DefWindowProc (hwnd, iMsg, wParam, lParam) ;
-
+	return (int)msg.wParam;
 }
