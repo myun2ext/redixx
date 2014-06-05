@@ -9,44 +9,54 @@ LRESULT CALLBACK RinderonWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 		default:
 			break;
 	}
-
-	return ::DefWindowProc(hwnd, uMsg, wParam, lParam);
+	return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-int WINAPI WinMain(HINSTANCE hinst, HINSTANCE hinstPrev, LPSTR lpszCmdLine, int nCmdShow)
+HWND RinderonCreateWindow()
 {
-	TCHAR      szAppName[] = TEXT("sample");
-	HWND       hwnd;
-	MSG        msg;
 	WNDCLASSEX wc;
+	LPCSTR szWindowClassName = "__RinderonTemporaryWindowClass__";
+	HWND hWnd;
+	MSG msg;
 
-	wc.cbSize        = sizeof(WNDCLASSEX);
-	wc.style         = 0;
-	wc.lpfnWndProc   = WindowProc;
+	wc.cbSize        = sizeof(wc);
+	wc.style         = CS_HREDRAW | CS_VREDRAW;
+	wc.lpfnWndProc   = RinderonWindowProc;
 	wc.cbClsExtra    = 0;
 	wc.cbWndExtra    = 0;
-	wc.hInstance     = hinst;
-	wc.hIcon         = (HICON)LoadImage(NULL, IDI_APPLICATION, IMAGE_ICON, 0, 0, LR_SHARED);
-	wc.hCursor       = (HCURSOR)LoadImage(NULL, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_SHARED);
+	wc.hInstance     = NULL;
+	wc.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	wc.lpszMenuName  = NULL;
-	wc.lpszClassName = szAppName;
-	wc.hIconSm       = (HICON)LoadImage(NULL, IDI_APPLICATION, IMAGE_ICON, 0, 0, LR_SHARED);
-	
-	if (RegisterClassEx(&wc) == 0)
-		return 0;
+	wc.lpszClassName = szWindowClassName;
+	wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
+	::RegisterClassEx(&wc);
 
-	hwnd = CreateWindowEx(WS_EX_TOPMOST, szAppName, szAppName, WS_OVERLAPPEDWINDOW & ~WS_MINIMIZEBOX, CW_USEDEFAULT, CW_USEDEFAULT, 300, 200, NULL, NULL, hinst, NULL);
-	if (hwnd == NULL)
-		return 0;
+	hWnd = ::CreateWindowEx(
+	        WS_EX_TOPMOST,
+            szWindowClassName,
+	        "Window",
+            WS_OVERLAPPEDWINDOW,
+            32,32,
+            256,256,
+            NULL,
+            NULL,
+            NULL,
+            NULL);
 
-	ShowWindow(hwnd, nCmdShow);
-	UpdateWindow(hwnd);
-	
-	while (GetMessage(&msg, NULL, 0, 0) > 0) {
+	ShowWindow(hWnd, SW_SHOWDEFAULT);
+	UpdateWindow(hWnd);
+
+	while (GetMessage (&msg,NULL,0,0)) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
 
-	return (int)msg.wParam;
+	return hWnd;
+}
+
+int WINAPI WinMain(HINSTANCE hinst, HINSTANCE hInstPrev, LPSTR lpszCmdLine, int nCmdShow)
+{
+	RinderonCreateWindow();
 }
